@@ -1,0 +1,85 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Probabilidad</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        button { padding: 10px 20px; font-size: 16px; margin: 10px; cursor: pointer; }
+        h1 { font-size: 3rem; color: #333; }
+        #message { margin-top: 20px; font-weight: bold; color: #0066cc; }
+    </style>
+</head>
+<body>
+
+    <h2>Tu Puntaje Actual</h2>
+    <h1 id="scoreDisplay">0</h1>
+
+    <button id="btnRoll">🎲 Roll</button>
+    <button id="btnSurrender">🏳️ Rendirse</button>
+
+    <div id="message">¡Presiona Roll para empezar a jugar!</div>
+
+    <script>
+        let score = 0;
+        const btnRoll = document.getElementById('btnRoll');
+        const btnSurrender = document.getElementById('btnSurrender');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const messageDisplay = document.getElementById('message');
+
+        // Lógica del botón Roll
+        btnRoll.addEventListener('click', () => {
+            const rand = Math.random(); // Genera un número entre 0 y 1
+            let points = 0;
+
+            if (rand < 0.60) {
+                points = 1; // 60% de probabilidad
+            } else if (rand < 0.90) {
+                points = 2; // 30% de probabilidad
+            } else {
+                points = 10; // 10% de probabilidad
+            }
+
+            score += points;
+            scoreDisplay.textContent = score;
+            messageDisplay.textContent = `¡Ganaste ${points} punto(s)!`;
+        });
+
+        // Lógica del botón Rendirse
+        btnSurrender.addEventListener('click', async () => {
+            // Terminar el juego (deshabilitar botones)
+            btnRoll.disabled = true;
+            btnSurrender.disabled = true;
+
+            const playerName = prompt("Juego terminado. Ingresa tu nombre para guardar el puntaje:");
+
+            if (playerName) {
+                messageDisplay.textContent = "Guardando puntaje...";
+
+                // Enviar datos al backend (Node.js) para guardar en SQLite
+                try {
+                    const response = await fetch('/api/save-score', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: playerName, score: score })
+                    });
+
+                    const result = await response.json();
+                    if(response.ok) {
+                        messageDisplay.textContent = `¡Excelente ${playerName}! Tu puntaje final de ${score} ha sido guardado.`;
+                    } else {
+                        messageDisplay.textContent = "Hubo un error al guardar el puntaje.";
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    messageDisplay.textContent = "No se pudo conectar con el servidor.";
+                }
+            } else {
+                messageDisplay.textContent = `Juego terminado con ${score} puntos. (No guardado)`;
+            }
+        });
+    </script>
+</body>
+</html>
