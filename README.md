@@ -4,6 +4,7 @@ El juegador presiona el boton de roll para obtener un mayor puntaje de manera al
 los puntos se adquieren en sqlite
 
 Instalaciones 
+
 node server.js 
 browser SQLITE
 
