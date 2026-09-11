@@ -1,85 +1,288 @@
-<!-- public/index.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Juego de Probabilidad</title>
+
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-        button { padding: 10px 20px; font-size: 16px; margin: 10px; cursor: pointer; }
-        h1 { font-size: 3rem; color: #333; }
-        #message { margin-top: 20px; font-weight: bold; color: #0066cc; }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+        }
+
+        h1 {
+            font-size: 3rem;
+            color: #333;
+        }
+
+        #message {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #0066cc;
+        }
+
+        #topScore {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        #ranking {
+            margin-top: 10px;
+            line-height: 1.8;
+        }
+
+        #comparison {
+            margin-top: 15px;
+            font-weight: bold;
+        }
     </style>
 </head>
+
 <body>
 
     <h2>Tu Puntaje Actual</h2>
+
     <h1 id="scoreDisplay">0</h1>
 
+    <div id="topScore">
+        🏆 TOP 3
+        <div id="ranking">Cargando...</div>
+    </div>
+
+    <div id="comparison">
+        Cargando récord...
+    </div>
+
     <button id="btnRoll">🎲 Roll</button>
+
     <button id="btnSurrender">🏳️ Rendirse</button>
 
-    <div id="message">¡Presiona Roll para empezar a jugar!</div>
+    <div id="message">
+        ¡Presiona Roll para empezar a jugar!
+    </div>
 
     <script>
+
         let score = 0;
+        let topScore = 0;
+
         const btnRoll = document.getElementById('btnRoll');
         const btnSurrender = document.getElementById('btnSurrender');
+
         const scoreDisplay = document.getElementById('scoreDisplay');
         const messageDisplay = document.getElementById('message');
 
+        const rankingDisplay = document.getElementById('ranking');
+        const comparisonDisplay = document.getElementById('comparison');
+
+
+        // Cargar los 3 mejores puntajes
+        async function loadTopScore() {
+
+            try {
+
+                const response = await fetch('/api/top-score');
+
+                const data = await response.json();
+
+                if (data.length === 0) {
+
+                    rankingDisplay.textContent =
+                        "No hay puntajes todavía.";
+
+                    topScore = 0;
+
+                    updateComparison();
+
+                    return;
+                }
+
+
+                rankingDisplay.innerHTML = "";
+
+
+                data.forEach((player, index) => {
+
+                    const playerElement =
+                        document.createElement('div');
+
+                    playerElement.textContent =
+                        `${index + 1}. ${player.name} - ${player.score} puntos`;
+
+                    rankingDisplay.appendChild(playerElement);
+
+                });
+
+
+                topScore = data[0].score;
+
+                updateComparison();
+
+            } catch (error) {
+
+                console.error("Error:", error);
+
+                rankingDisplay.textContent =
+                    "No se pudo consultar el récord.";
+
+            }
+        }
+
+
+        // Comparar el puntaje actual con el récord
+        function updateComparison() {
+
+            if (score > topScore) {
+
+                comparisonDisplay.textContent =
+                    "🔥 ¡Estás superando el récord actual!";
+
+            } else {
+
+                const pointsNeeded =
+                    topScore - score + 1;
+
+                comparisonDisplay.textContent =
+                    `Te faltan ${pointsNeeded} punto(s) para superar el récord.`;
+            }
+        }
+
+
         // Lógica del botón Roll
         btnRoll.addEventListener('click', () => {
-            const rand = Math.random(); // Genera un número entre 0 y 1
+
+            const rand = Math.random();
+
             let points = 0;
 
+
             if (rand < 0.60) {
+
                 points = 1; // 60% de probabilidad
+
             } else if (rand < 0.90) {
+
                 points = 2; // 30% de probabilidad
+
             } else {
+
                 points = 10; // 10% de probabilidad
+
             }
 
+
             score += points;
+
             scoreDisplay.textContent = score;
-            messageDisplay.textContent = `¡Ganaste ${points} punto(s)!`;
+
+            messageDisplay.textContent =
+                `¡Ganaste ${points} punto(s)!`;
+
+
+            updateComparison();
+
         });
+
 
         // Lógica del botón Rendirse
         btnSurrender.addEventListener('click', async () => {
+
             // Terminar el juego (deshabilitar botones)
             btnRoll.disabled = true;
+
             btnSurrender.disabled = true;
 
-            const playerName = prompt("Juego terminado. Ingresa tu nombre para guardar el puntaje:");
+
+            const playerName =
+                prompt(
+                    "Juego terminado. Ingresa tu nombre para guardar el puntaje:"
+                );
+
 
             if (playerName) {
-                messageDisplay.textContent = "Guardando puntaje...";
+
+                messageDisplay.textContent =
+                    "Guardando puntaje...";
+
 
                 // Enviar datos al backend (Node.js) para guardar en SQLite
                 try {
-                    const response = await fetch('/api/save-score', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name: playerName, score: score })
-                    });
 
-                    const result = await response.json();
-                    if(response.ok) {
-                        messageDisplay.textContent = `¡Excelente ${playerName}! Tu puntaje final de ${score} ha sido guardado.`;
+                    const response =
+                        await fetch('/api/save-score', {
+
+                            method: 'POST',
+
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+
+                            body: JSON.stringify({
+                                name: playerName,
+                                score: score
+                            })
+
+                        });
+
+
+                    const result =
+                        await response.json();
+
+
+                    if (response.ok) {
+
+                        messageDisplay.textContent =
+                            `¡Excelente ${playerName}! Tu puntaje final de ${score} ha sido guardado.`;
+
+
+                        await loadTopScore();
+
                     } else {
-                        messageDisplay.textContent = "Hubo un error al guardar el puntaje.";
+
+                        console.error(
+                            "Error del servidor:",
+                            result.error
+                        );
+
+                        messageDisplay.textContent =
+                            `Error al guardar: ${result.error}`;
+
                     }
+
+
                 } catch (error) {
+
                     console.error("Error:", error);
-                    messageDisplay.textContent = "No se pudo conectar con el servidor.";
+
+                    messageDisplay.textContent =
+                        "No se pudo conectar con el servidor.";
+
                 }
+
             } else {
-                messageDisplay.textContent = `Juego terminado con ${score} puntos. (No guardado)`;
+
+                messageDisplay.textContent =
+                    `Juego terminado con ${score} puntos. (No guardado)`;
+
             }
+
         });
+
+
+        // Cargar ranking al iniciar
+        loadTopScore();
+
     </script>
+
 </body>
 </html>

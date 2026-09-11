@@ -1,16 +1,23 @@
 {
-  "name": "practica_sqlite",
+  "name": "praticas5tokevin",
   "version": "1.0.0",
-  "description": "",
-  "main": "server.js",
+  "description": "hola ¿un tokon?",
+  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Khekev/Praticas5tokevin.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Khekev/Praticas5tokevin/issues"
+  },
+  "homepage": "https://github.com/Khekev/Praticas5tokevin#readme",
   "dependencies": {
     "express": "^5.2.1",
     "sqlite3": "^6.0.1"
