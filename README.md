@@ -18,10 +18,9 @@ ocupe SELECT, WHERE, ODER BY Y LIMIT
 
 EL CODIGO 
 SELECT name, score
-from score
-where score  >=0
-Oder by score desc 
-limit 3;
+FROM scores
+ORDER BY score DESC
+LIMIT 3;
 
 pd: no me quedo muy claro por que no se guarda el record en sqlite
 
