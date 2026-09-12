@@ -21,15 +21,9 @@ lo puse hasta el top 3
 
 ocupe SELECT, WHERE, ODER BY Y LIMIT 
 
-EL CODIGO 
 
-SELECT name, score
+SELECT name, score FROM scores WHERE score >= 0 ORDER BY score DESC LIMIT 3;
 
-FROM scores
-
-ORDER BY score DESC
-
-LIMIT 3;
 
 pd: no me quedo muy claro por que no se guarda el record en sqlite
 
